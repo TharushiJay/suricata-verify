@@ -40,6 +40,7 @@ import unittest
 import time
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 import yaml
 
@@ -957,9 +958,10 @@ def main():
     # Sort alphabetically.
     tests.sort()
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ProcessPoolExecutor(max_workers=4) as executor:
         for dirpath in tests:
-            future = executor.submit(run_test, (dirpath, args, cwd, suricata_config))
+            future = executor.submit(run_test, args=(dirpath, args, cwd, suricata_config))
+            #print(future.result())
 
     # threads = []
     # for dirpath in tests:
