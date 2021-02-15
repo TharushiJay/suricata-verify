@@ -40,6 +40,7 @@ import unittest
 import multiprocessing as mp
 from collections import namedtuple
 import threading
+import subprocess
 
 import yaml
 
@@ -109,6 +110,9 @@ class UnsatisfiedRequirementError(Exception):
     pass
 
 class TerminatePoolError(Exception):
+    pass
+
+class InvalidJsonSchemaError(Exception):
     pass
 
 SuricataVersion = namedtuple(
@@ -872,15 +876,17 @@ def run_test(dirpath, args, cwd, suricata_config):
         elif results["success"] > 0:
             with lock:
                 count_dict["passed"] += 1
+        os.system("python ../suricata-verify/check-eve.py {}".format(outdir))
     except UnsatisfiedRequirementError as ue:
         print("===> {}: SKIPPED: {}".format(os.path.basename(dirpath), ue))
         with lock:
             count_dict["skipped"] += 1
-    except TestError as te:
-        print("===> {}: FAILED: {}".format(os.path.basename(dirpath), te))
+    except InvalidJsonSchemaError as ie:
+        print("===> {}: FAILED: {}".format(os.path.basename(dirpath), ie))
         check_args_fail()
         with lock:
             count_dict["failed"] += 1
+
 
 def run_mp(jobs, tests, dirpath, args, cwd, suricata_config):
     print("Number of concurrent jobs: %d" % jobs)
